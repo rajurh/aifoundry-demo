@@ -5,6 +5,9 @@ from azure.identity import DefaultAzureCredential
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient
+from config import get_logger
+
+logger = get_logger(__name__)
 
 # create a project client using environment variables loaded from the .env file
 project = AIProjectClient.from_connection_string(
@@ -166,6 +169,7 @@ if __name__ == "__main__":
     # create an empty search index
     index_definition = create_index_definition(index_name, model=os.environ["EMBEDDINGS_MODEL"])
     index = index_client.create_index(index_definition)
+    logger.info(f"✨ Created new vector search index named '{index_name}'")
 
     # create documents from the products.csv file, generating vector embeddings for the "description" column
     docs = create_docs_from_csv(

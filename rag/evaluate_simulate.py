@@ -1,9 +1,8 @@
 from chat_with_products import chat_with_products
 import os
-print("importing simulator")
+
 from azure.ai.evaluation.simulator import Simulator
-print("done importing simulator")
-from azure.ai.evaluation import evaluate, CoherenceEvaluator, FluencyEvaluator
+from azure.ai.evaluation import RelevanceEvaluator, GroundednessEvaluator
 from typing import Any, Dict, List, Optional
 import asyncio
 from azure.ai.projects import AIProjectClient
@@ -55,24 +54,28 @@ async def custom_simulator_raw_conversation_starter():
                 "I need a new tent, what would you recommend?",
             ],
         ],
-        max_conversation_turns=10,
+        max_conversation_turns=3,
     )
-    with open("chat_output.jsonl", "w") as f:
-        for output in outputs:
-            f.write(output.to_eval_qr_json_lines())
+    groundeness_eval = GroundednessEvaluator(model_config=evaluator_model)
+    result = groundeness_eval(conversation=outputs)
+    print(result)
 
-async def evaluate_custom_simulator_raw_conversation_starter():
-    coherence_eval = CoherenceEvaluator(model_config=model_config)
-    fluency_eval = FluencyEvaluator(model_config=model_config)
-    eval_outputs = evaluate(
-        data="chat_output.jsonl",
-        evaluators={
-            "coherence": coherence_eval,
-            "fluency": fluency_eval,
-        },
-        # azure_ai_project=azure_ai_project, # optional only if you did optional installation
-    )
-    print(eval_outputs)
+    # with open("chat_output.jsonl", "w") as f:
+    #     for output in outputs:
+    #         f.write(output.to_eval_qr_json_lines())
+
+# async def evaluate_custom_simulator_raw_conversation_starter():
+    
+#     result = groundeness_eval()
+#     eval_outputs = evaluate(
+#         data="chat_output.jsonl",
+#         evaluators={
+#             "coherence": coherence_eval,
+#             "fluency": fluency_eval,
+#         },
+#         # azure_ai_project=azure_ai_project, # optional only if you did optional installation
+#     )
+#     print(eval_outputs)
 
 
 if __name__ == "__main__":

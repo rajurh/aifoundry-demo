@@ -1,0 +1,6 @@
+phi-3.5-mini-instruct
+
+first provide suggestions referencing the documents and then ask clarifying questions
+
+todo:
+ - make basic inference sample streaming

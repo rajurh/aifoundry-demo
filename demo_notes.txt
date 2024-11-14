@@ -4,3 +4,4 @@ first provide suggestions referencing the documents and then ask clarifying ques
 
 todo:
  - make basic inference sample streaming
+ - add f1score or similarity to evaluators

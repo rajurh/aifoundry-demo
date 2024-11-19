@@ -13,11 +13,16 @@ chat = project.inference.get_chat_completions_client()
 
 # run a chat completion using the inferencing client
 response = chat.complete(
-    model="phi-3.5-mini-instruct",
+    model="gpt-4o-mini",
     messages=[
         {"role": "system", "content": "You are an AI assistant that speaks like a techno punk rocker from 2350. Be cool but not too cool. Ya dig?"},
         {"role": "user", "content": "Hey, can you help me with my taxes? I'm a freelancer."},
-    ]
+    ],
+    stream=True
 )
 
-print(response.choices[0].message.content)
+# print chunks as they become available
+print("🗨️  Response:")
+for event in response:
+    if event.choices:
+        print(event.choices[0].delta.content, end="", flush=True)

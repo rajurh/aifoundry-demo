@@ -172,9 +172,9 @@ def create_index_from_csv(index_name, csv_file):
         pass
 
     # create an empty search index
-    logger.info(f"🗑️  Found existing index named '{index_name}', and deleted it")
     index_definition = create_index_definition(index_name, model=os.environ["EMBEDDINGS_MODEL"])
     index_client.create_index(index_definition)
+    logger.info(f"✨ Created new index named '{index_name}'")
 
     # create documents from the products.csv file, generating vector embeddings for the "description" column
     docs = create_docs_from_csv(path=csv_file, content_column="description", model=os.environ["EMBEDDINGS_MODEL"])

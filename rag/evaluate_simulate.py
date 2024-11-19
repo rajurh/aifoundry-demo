@@ -5,7 +5,7 @@ from chat_with_products import chat_with_products
 import os
 
 from azure.ai.evaluation.simulator import Simulator
-from azure.ai.evaluation import evaluate, CoherenceEvaluator, FluencyEvaluator
+from azure.ai.evaluation import evaluate, GroundednessEvaluator
 from typing import Any, Dict, List, Optional
 import asyncio
 from azure.ai.projects import AIProjectClient
@@ -38,7 +38,7 @@ async def custom_simulator_callback(
 ) -> dict:
     # call your endpoint or ai application here
     actual_messages = messages["messages"]
-    print(f"\n🗨️ {actual_messages[-1]['content']}")
+    print(f"\n🗨️  {actual_messages[-1]['content']}")
     response = chat_with_products(actual_messages)
     message = {
         "role": "assistant",
@@ -57,26 +57,11 @@ async def custom_simulator_raw_conversation_starter():
                 "I need a new tent, what would you recommend?",
             ],
         ],
-        max_conversation_turns=10,
+        max_conversation_turns=3,
     )
-    with open("chat_output.jsonl", "w") as f:
-        for output in outputs:
-            f.write(output.to_eval_qr_json_lines())
-
-
-async def evaluate_custom_simulator_raw_conversation_starter():
-    coherence_eval = CoherenceEvaluator(model_config=model_config)
-    fluency_eval = FluencyEvaluator(model_config=model_config)
-    eval_outputs = evaluate(
-        data="chat_output.jsonl",
-        evaluators={
-            "coherence": coherence_eval,
-            "fluency": fluency_eval,
-        },
-        # azure_ai_project=azure_ai_project, # optional only if you did optional installation
-    )
-    print(eval_outputs)
-
+    groundedness = GroundednessEvaluator(model_config=evaluator_model)
+    result = groundedness(conversation=outputs[0])
+    print(result)
 
 if __name__ == "__main__":
     custom_simulator = Simulator(model_config=evaluator_model)

@@ -6,7 +6,7 @@ products:
 - ai-model-inference
 - ai-search
 - ai-evaluation
-description: Example description.
+description: Custom rag app sample using Azure AI SDKs
 ---
 
 ## Custom RAG App
@@ -28,6 +28,12 @@ Check out the following files for implementation details:
 
 The main objective of this sample is for you to understand how to build a custom knowledge retrieval (RAG) app using the Azure AI Inferencing SDK. We'll be putting together inferencing, tracing, evaluation, prompts and search to build a fully custom rag app!
 
+This tutorial uses the following services:
+ - Azure Model inference
+ - Azure AI Search
+ - Application Insights
+ - Azure AI projects
+
 ## Create resources
 
 To run this sample, you'll need to create an Azure AI Project with an Azure AI Services resource connected to it. If you have an existing one, you can skip these steps and move to the next section.
@@ -35,9 +41,10 @@ To run this sample, you'll need to create an Azure AI Project with an Azure AI S
 ### Create an AI Project and AI Services resource
 
 First we'll create a project in Azure AI Studio:
- - Go to [https://aka.ms/aistudio/ignite2024](https://aka.ms/aistudio/ignite2024)
+ - Navigate to [ai.azure.com](ai.azure.com)
  - Click **New Project** on the homepage
  - Enter a project name
+ - In **Customize** change the location to **East US 2** or **Sweden Central**
  - Click **Create new hub**, provide a hub name
  - Click **Create Project**
 
@@ -50,9 +57,7 @@ Now we'll need to deploy a model so that we can call it from code. To start, we'
  - Click the **+ Deploy Model** dropdown and click **Deploy a base model**
  - Select **gpt-4o-mini** from the list and click **Confirm**
 
-Repeat the above steps for the following models:
- - text-embedding-3-large
- - Phi-3.5-mini-instruct _coming soon: not currently available in AI Studio_
+Repeat the above steps to add a **text-embedding-ada-002**.
 
 ## Set up a local development environment
 
@@ -81,6 +86,12 @@ source venv/bin/activate
 Install the full set of dependencies to run the sample:
 ```Python
 pip install -r dev-requirements.txt
+```
+
+### Log in to the Azure CLI
+If you haven't already, you'll need to log in to the Azure CLI in your terminal. It will open a browser for you to authenticate and then log you in in the terminal.
+```Python
+az login
 ```
 
 ## Configure project string

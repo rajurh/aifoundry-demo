@@ -1,26 +1,26 @@
+# ruff: noqa: E402, ANN201, ANN001
+
 # <imports_and_config>
 import os
 import pandas as pd
 from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import ConnectionType
-from azure.ai.evaluation import evaluate, GroundednessEvaluator, F1ScoreEvaluator, RelevanceEvaluator
+from azure.ai.evaluation import evaluate, GroundednessEvaluator, RelevanceEvaluator
 from azure.identity import DefaultAzureCredential
 
 from chat_with_products import chat_with_products
 
 # load environment variables from the .env file at the root of this repo
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # create a project client using environment variables loaded from the .env file
 project = AIProjectClient.from_connection_string(
-    conn_str=os.environ['AIPROJECT_CONNECTION_STRING'],
-    credential=DefaultAzureCredential()
+    conn_str=os.environ["AIPROJECT_CONNECTION_STRING"], credential=DefaultAzureCredential()
 )
 
-connection = project.connections.get_default(
-    connection_type=ConnectionType.AZURE_OPEN_AI,
-    with_credentials=True)
+connection = project.connections.get_default(connection_type=ConnectionType.AZURE_OPEN_AI, include_credentials=True)
 
 evaluator_model = {
     "azure_endpoint": connection.endpoint_url,
@@ -31,14 +31,14 @@ evaluator_model = {
 
 # </imports_and_config>
 
+
 # create a wrapper function that implements the evaluation interface for query & response evaluation
 # <evaluate_wrapper>
 def evaluate_chat_with_products(query):
     response = chat_with_products(messages=[{"role": "user", "content": query}])
-    return {
-        "response": response["message"].content,
-        "context": response["context"]["grounding_data"]
-    }
+    return {"response": response["message"].content, "context": response["context"]["grounding_data"]}
+
+
 # </evaluate_wrapper>
 
 # <run_evaluation>
@@ -48,15 +48,16 @@ if __name__ == "__main__":
 
     # workaround for multiprocessing issue on linux
     from pprint import pprint
+    from pathlib import Path
     import multiprocessing
-    try:
-        multiprocessing.set_start_method('spawn', force=True)
-    except RuntimeError:
-        pass
+    import contextlib
+
+    with contextlib.suppress(RuntimeError):
+        multiprocessing.set_start_method("spawn", force=True)
 
     # run evaluation with a dataset and target function, log to the project
     result = evaluate(
-        data=os.path.join(ASSET_PATH, "chat_eval_data.jsonl"),
+        data=Path(ASSET_PATH) / "chat_eval_data.jsonl",
         target=evaluate_chat_with_products,
         evaluation_name="evaluate_chat_with_products",
         evaluators={
@@ -71,15 +72,17 @@ if __name__ == "__main__":
             }
         },
         azure_ai_project=project.scope,
-        output_path="./myevalresults.json"
+        output_path="./myevalresults.json",
     )
 
     tabular_result = pd.DataFrame(result.get("rows"))
 
+    print(tabular_result.columns.tolist())
+
     pprint("-----Summarized Metrics-----")
     pprint(result["metrics"])
     pprint("-----Tabular Result-----")
-    pprint(tabular_result)
+    pprint(tabular_result[['outputs.response', 'outputs.groundedness.groundedness', 'outputs.relevance.relevance']])
     pprint(f"View evaluation results in AI Studio: {result['studio_url']}")
 # </run_evaluation>
 

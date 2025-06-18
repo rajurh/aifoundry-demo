@@ -34,17 +34,22 @@ print("Response: ", content)
 # Evaluate the response
 from azure.ai.evaluation import RelevanceEvaluator
 
-connection = project.connections.get_default(
-    connection_type=ConnectionType.AZURE_OPEN_AI,
-    with_credentials=True)
+try:
+    connection = project.connections.get_default(
+        connection_type=ConnectionType.AZURE_OPEN_AI,
+        include_credentials=True)
+except ValueError as e:
+    print("No default AZURE_OPEN_AI connection found. Please configure one in your Azure AI Project.")
+    connection = None
 
-evaluator_model = {
-    "azure_endpoint": connection.endpoint_url,
-    "azure_deployment": os.environ.get("EVALUATION_MODEL", "gpt-4o-mini"),
-    "api_version": "2024-06-01",
-    "api_key": connection.key,
-}
+if connection:
+    evaluator_model = {
+        "azure_endpoint":"https://demoazureopenai1223.openai.azure.com/", #connection.endpoint_url,
+        "azure_deployment": "gpt-4.1-mini", #os.environ.get("EVALUATION_MODEL", "gpt-4.1-mini"),
+        "api_version": "2025-01-01-preview",
+        "api_key": "Replace", #connection.key,
+    }
 
-relevance = RelevanceEvaluator(evaluator_model)
-score = relevance(query=query, response=response)
-print(score)
+    relevance = RelevanceEvaluator(evaluator_model)
+    score = relevance(query=query, response=response)
+    print(score)

@@ -1,10 +1,15 @@
+import os
+from dotenv import load_dotenv
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
-project_connection_string = "eastus2.api.azureml.ms;597966d1-829f-417e-9950-8189061ec09c;rg-dantaylo-e2e-demo2;dantaylo-e2e-demo2"
+load_dotenv(override=True)
 
-project = AIProjectClient.from_connection_string(
-    conn_str=project_connection_string,
+endpoint = os.environ.get("AIPROJECT_ENDPOINT", "https://ai-foundry-demo1.services.ai.azure.com/api/projects/firstProject")
+chat_model = os.environ.get("CHAT_MODEL", "gpt-4o")
+
+project = AIProjectClient(
+    endpoint=endpoint,
     credential=DefaultAzureCredential()
 )
 
@@ -13,7 +18,7 @@ chat = project.inference.get_chat_completions_client()
 
 # run a chat completion using the inferencing client
 response = chat.complete(
-    model="gpt-4o-mini",
+    model=chat_model,
     messages=[
         {"role": "system", "content": "You are an AI assistant that speaks like a techno punk rocker from 2350. Be cool but not too cool. Ya dig?"},
         {"role": "user", "content": "Hey, can you help me with my taxes? I'm a freelancer."},

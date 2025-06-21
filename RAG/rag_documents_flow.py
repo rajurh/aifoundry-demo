@@ -1,5 +1,6 @@
 import json
 import os
+import pathlib
 
 import azure.identity
 import openai
@@ -34,7 +35,8 @@ else:
     MODEL_NAME = os.environ["OPENAI_MODEL"]
 
 # Index the data from the JSON - each object has id, text, and embedding
-with open("rag_ingested_chunks.json") as file:
+json_path = pathlib.Path(__file__).parent / "data" / "rag_ingested_chunks.json"
+with open(json_path) as file:
     documents = json.load(file)
     documents_by_id = {doc["id"]: doc for doc in documents}
 index = lunr(ref="id", fields=["text"], documents=documents)

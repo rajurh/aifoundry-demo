@@ -7,3 +7,6 @@ python-dotenv
 openai
 pandas
 azure-ai-evaluation[remote]
+matplotlib
+numpy
+scikit-learn

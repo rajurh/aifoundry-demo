@@ -33,7 +33,7 @@ chat_model = os.environ.get("CHAT_MODEL", "gpt-4o")
 response = chat.complete(
     model=chat_model,
     messages=[
-        {"role": "system", "content": "You are an AI assistant that speaks like a techno punk rocker from 2350. Be cool but not too cool. Ya dig?"},
+        {"role": "system", "content": "You are an AI assistant that speaks like a tax consultant. Be professional and helpful."},
         {"role": "user", "content": query},
     ]
 )

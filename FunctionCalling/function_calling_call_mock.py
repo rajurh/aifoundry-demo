@@ -1,3 +1,4 @@
+import json
 import os
 
 import azure.identity
@@ -32,6 +33,18 @@ else:
     MODEL_NAME = os.environ["OPENAI_MODEL"]
 
 
+def lookup_weather(city_name=None, zip_code=None):
+    """Lookup the weather for a given city name or zip code."""
+    print(f"Looking up weather for {city_name or zip_code}...")
+    return "It's sunny!"
+
+
+def lookup_stock_price(symbol=None):
+    """Mock stock price lookup."""
+    print(f"Looking up stock price for {symbol}...")
+    return f"The current price of {symbol} is $123.45."
+
+
 tools = [
     {
         "type": "function",
@@ -50,6 +63,7 @@ tools = [
                         "description": "The zip code",
                     },
                 },
+                "strict": True,
                 "additionalProperties": False,
             },
         },
@@ -67,30 +81,50 @@ tools = [
                         "description": "The stock ticker symbol, e.g., AAPL for Apple.",
                     },
                 },
+                "strict": True,
                 "additionalProperties": False,
             },
         },
     }
 ]
 
+messages = [
+    {"role": "system", "content": "You are an AI assistant that can answer weather and stock price questions."},
+    {"role": "user", "content": "What's the weather in Berkeley and the stock price for AAPL?"},
+]
+
 response = client.chat.completions.create(
     model=MODEL_NAME,
-    messages=[
-        # {"role": "system", "content": "You are a weather chatbot."},
-        # {"role": "user", "content": "Hi, whats the weather like in berkeley?"},
-        #  {"role": "system", "content": "You are a stock market assistant."},
-        # {"role": "user", "content": "Hi, whats the stock price for Microsoft?"},
-        {"role": "system", "content": "You are an AI assistant."},
-        {"role": "user", "content": "Hi, whats the capital of Australia?"},
-    ],
+    messages=messages,
     tools=tools,
+    tool_choice="auto",
 )
 
 print(f"Response from {MODEL_NAME} on {API_HOST}: \n")
 
+# Handle tool call(s)
 if response.choices[0].message.tool_calls:
-    tool_call = response.choices[0].message.tool_calls[0]
-    print(tool_call.function.name)
-    print(tool_call.function.arguments)
+    tool_calls = response.choices[0].message.tool_calls
+    function_messages = []
+    for tool_call in tool_calls:
+        function_name = tool_call.function.name
+        arguments = json.loads(tool_call.function.arguments)
+        if function_name == "lookup_weather":
+            function_result = lookup_weather(**arguments)
+        elif function_name == "lookup_stock_price":
+            function_result = lookup_stock_price(**arguments)
+        else:
+            function_result = "Function not implemented."
+        function_messages.append({
+            "role": "function",
+            "name": function_name,
+            "content": function_result,
+        })
+    followup_messages = messages + function_messages
+    final_response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=followup_messages,
+    )
+    print(final_response.choices[0].message.content)
 else:
     print(response.choices[0].message.content)
